@@ -1,0 +1,36 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.applink">
+
+    <!-- Android 11+ package visibility: discover other ecosystem apps -->
+    <queries>
+        <intent>
+            <action android:name="com.applink.BIND" />
+        </intent>
+    </queries>
+
+    <application>
+
+        <!-- ContentProvider for capability discovery (auto-merged into host app) -->
+        <provider
+            android:name="com.applink.AppLinkContentProvider"
+            android:authorities="${applicationId}.applink"
+            android:exported="true"
+            android:grantUriPermissions="false" />
+
+        <!-- AIDL Bound Service for IPC (auto-merged into host app) -->
+        <service
+            android:name="com.applink.AppLinkService"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.applink.BIND" />
+            </intent-filter>
+        </service>
+
+        <!-- Marker: this app belongs to the AppLink ecosystem -->
+        <meta-data
+            android:name="com.applink.ecosystem"
+            android:value="true" />
+
+    </application>
+
+</manifest>

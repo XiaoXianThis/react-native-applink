@@ -1,0 +1,10 @@
+.git
+.github
+.idea
+.vscode
+.cursor
+node_modules
+example
+*.log
+.DS_Store
+Thumbs.db
