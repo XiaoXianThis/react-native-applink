@@ -68,12 +68,22 @@ public class AppLinkModule extends ReactContextBaseJavaModule {
     }
 
     @Override
-    public void onCatalystInstanceDestroy() {
-        super.onCatalystInstanceDestroy();
+    public void invalidate() {
         executor.shutdown();
         if (core != null) {
             core.getConnectionManager().disconnectAll();
         }
+        super.invalidate();
+    }
+
+    @Override
+    @SuppressWarnings("deprecation")
+    public void onCatalystInstanceDestroy() {
+        executor.shutdown();
+        if (core != null) {
+            core.getConnectionManager().disconnectAll();
+        }
+        super.onCatalystInstanceDestroy();
     }
 
     // ======================= Discovery =======================

@@ -4,7 +4,20 @@
 .vscode
 .cursor
 node_modules
-example
 *.log
 .DS_Store
 Thumbs.db
+
+# Test files
+__tests__
+__mocks__
+jest.config.js
+babel.config.js
+
+# Examples
+examples
+
+# Dev files
+CHANGELOG.md
+.eslintrc*
+.prettierrc*

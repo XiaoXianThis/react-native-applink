@@ -7,3 +7,13 @@ build/
 Thumbs.db
 *.log
 local.properties
+
+# Local pack for examples (avoids symlink recursion)
+react-native-applink-local.tgz
+
+# Example app build artifacts
+examples/*/node_modules/
+examples/*/android/.gradle/
+examples/*/android/app/build/
+examples/*/android/build/
+examples/*/.gradle/

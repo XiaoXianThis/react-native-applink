@@ -17,9 +17,9 @@
 ## 安装
 
 ```bash
-npm install react-native-applink
+npm install @xiaoxianthis/react-native-applink
 # 或
-yarn add react-native-applink
+yarn add @xiaoxianthis/react-native-applink
 ```
 
 React Native 0.60+ 自动链接，无需手动 link。
@@ -40,7 +40,7 @@ React Native 0.60+ 自动链接，无需手动 link。
 在每个 App 的根组件中：
 
 ```jsx
-import { AppLinkProvider } from 'react-native-applink';
+import { AppLinkProvider } from '@xiaoxianthis/react-native-applink';
 
 function App() {
   return (
@@ -56,7 +56,7 @@ function App() {
 ### 2. 共享状态
 
 ```jsx
-import { useSharedState } from 'react-native-applink';
+import { useSharedState } from '@xiaoxianthis/react-native-applink';
 
 // ---- App A（状态提供者，传入默认值即注册为所有者）----
 function UserScreen() {
@@ -82,7 +82,7 @@ function RemoteUserInfo() {
 ### 3. 共享方法
 
 ```jsx
-import { useSharedMethod, useRemoteMethod } from 'react-native-applink';
+import { useSharedMethod, useRemoteMethod } from '@xiaoxianthis/react-native-applink';
 
 // ---- App A（方法提供者）----
 function ScannerScreen() {
@@ -114,7 +114,7 @@ function OrderScreen() {
 ### 4. 发现已安装的 App
 
 ```jsx
-import { useDiscovery } from 'react-native-applink';
+import { useDiscovery } from '@xiaoxianthis/react-native-applink';
 
 function EcosystemScreen() {
   const { apps, initialized, refresh } = useDiscovery();
