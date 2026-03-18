@@ -1,5 +1,7 @@
 # react-native-applink
 
+**简体中文** | [**English**](README.en.md)
+
 跨 App 共享状态与方法调用的 React Native 库（仅 Android）。
 
 基于 **AIDL / Binder** 实现高性能进程间通信，通过 **ContentProvider** 实现零启动服务发现，封装成 React Hooks，让多个 App 之间共享状态和调用方法像在同一个项目里使用 `useState` 一样简单。
