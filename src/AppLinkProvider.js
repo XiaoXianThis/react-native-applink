@@ -19,7 +19,8 @@ export function AppLinkProvider({appId, children}) {
         }
       }
       if (app.methods) {
-        for (const name of app.methods) {
+        for (const m of app.methods) {
+          const name = typeof m === 'string' ? m : m.name;
           routes[name] = app.packageName;
         }
       }

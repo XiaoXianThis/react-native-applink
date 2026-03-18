@@ -89,6 +89,15 @@ function ScannerScreen() {
   useSharedMethod('scanner.scan', async (params) => {
     const result = await startQRScan(params.type);
     return { data: result };
+  }, {
+    description: '扫描二维码或条形码',
+    parameters: {
+      type: 'object',
+      properties: {
+        type: { type: 'string', description: '码类型: qr | barcode' },
+      },
+      required: ['type'],
+    },
   });
 
   return <CameraView />;
@@ -110,6 +119,7 @@ function OrderScreen() {
 - 如果 App A 没有启动，调用时会自动拉起
 - 方法支持异步，返回值自动序列化传输
 - 超时默认 15 秒
+- `schema` 参数可选，不传则和以前一样只注册方法名
 
 ### 4. 发现已安装的 App
 
@@ -126,13 +136,15 @@ function EcosystemScreen() {
         <View>
           <Text>{item.appName}</Text>
           <Text>状态: {item.states.join(', ')}</Text>
-          <Text>方法: {item.methods.join(', ')}</Text>
+          <Text>方法: {item.methods.map(m => m.name).join(', ')}</Text>
         </View>
       )}
     />
   );
 }
 ```
+
+`methods` 数组中每个元素为 `{ name, schema? }` 对象。`schema` 仅在注册时提供了才会出现。
 
 ## 架构总览
 
@@ -177,12 +189,23 @@ function EcosystemScreen() {
 
 返回 `[value, setter, isReady]`
 
-### `useSharedMethod(name, handler)`
+### `useSharedMethod(name, handler, schema?)`
 
 | 参数 | 类型 | 说明 |
 |------|------|------|
 | `name` | `string` | 全局唯一的方法名 |
 | `handler` | `(params) => Promise<any>` | 处理函数 |
+| `schema` | `MethodSchema` | 可选，JSON Schema 描述（兼容 Vercel AI SDK tool 格式） |
+
+`MethodSchema` 结构：
+
+```ts
+{
+  description?: string;          // 方法功能描述
+  parameters?: object;           // JSON Schema，描述输入参数
+  returns?: object;              // JSON Schema，描述返回值（仅供参考）
+}
+```
 
 ### `useRemoteMethod(name)`
 
@@ -197,6 +220,31 @@ function EcosystemScreen() {
 1. **签名证书校验**：每次 AIDL 调用前，服务端取 `Binder.getCallingUid()` 对应的包签名哈希，与自身比对。不一致则拒绝。
 2. **自动生效**：所有使用同一 keystore 签名的 App 自动互信，无需配置。
 3. **无自定义权限冲突**：不使用 `<permission>` 声明，避免多 App 安装时的权限冲突问题。
+
+## AI Agent 集成
+
+方法的 `schema` 采用标准 JSON Schema 格式，可直接对接 Vercel AI SDK 等 LLM 工具调用框架：
+
+```ts
+import { tool, jsonSchema } from 'ai';
+import { useDiscovery } from '@xiaoxianthis/react-native-applink';
+
+const { apps } = useDiscovery();
+
+// 将所有子 App 的方法自动转为 AI SDK tools
+const tools = {};
+for (const app of apps) {
+  for (const method of app.methods) {
+    if (!method.schema) continue;
+    tools[method.name] = tool({
+      description: method.schema.description,
+      inputSchema: jsonSchema(method.schema.parameters),
+      execute: async (params) =>
+        invokeRemoteMethod(app.packageName, method.name, params),
+    });
+  }
+}
+```
 
 ## 注意事项
 

@@ -4,8 +4,8 @@ const {AppLinkContext} = require('../src/AppLinkContext');
 const {useSharedMethod} = require('../src/hooks/useSharedMethod');
 const {NativeAppLink} = require('../src/NativeAppLink');
 
-function MethodRegistrar({name, handler}) {
-  useSharedMethod(name, handler);
+function MethodRegistrar({name, handler, schema}) {
+  useSharedMethod(name, handler, schema);
   return null;
 }
 
@@ -45,7 +45,7 @@ describe('useSharedMethod', () => {
       TestRenderer.create(renderMethod(ctx, {name: 'myMethod', handler}));
     });
 
-    expect(NativeAppLink.registerMethod).toHaveBeenCalledWith('myMethod');
+    expect(NativeAppLink.registerMethod).toHaveBeenCalledWith('myMethod', null);
     expect(mockRegisterHandler).toHaveBeenCalledWith(
       'myMethod',
       expect.any(Function),
@@ -118,5 +118,42 @@ describe('useSharedMethod', () => {
     const registeredHandler = mockRegisterHandler.mock.calls[0][1];
     await registeredHandler({x: 1});
     expect(handler2).toHaveBeenCalledWith({x: 1});
+  });
+
+  it('passes schema JSON to native module when provided', async () => {
+    const ctx = {...baseContext, registerMethodHandler: mockRegisterHandler};
+    const handler = jest.fn();
+    const schema = {
+      description: 'Scan a QR code',
+      parameters: {
+        type: 'object',
+        properties: {type: {type: 'string'}},
+        required: ['type'],
+      },
+    };
+
+    await TestRenderer.act(async () => {
+      TestRenderer.create(
+        renderMethod(ctx, {name: 'scanner.scan', handler, schema}),
+      );
+    });
+
+    expect(NativeAppLink.registerMethod).toHaveBeenCalledWith(
+      'scanner.scan',
+      JSON.stringify(schema),
+    );
+  });
+
+  it('passes null schema when not provided', async () => {
+    const ctx = {...baseContext, registerMethodHandler: mockRegisterHandler};
+    const handler = jest.fn();
+
+    await TestRenderer.act(async () => {
+      TestRenderer.create(
+        renderMethod(ctx, {name: 'noSchema', handler}),
+      );
+    });
+
+    expect(NativeAppLink.registerMethod).toHaveBeenCalledWith('noSchema', null);
   });
 });

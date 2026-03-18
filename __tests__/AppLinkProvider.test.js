@@ -60,7 +60,7 @@ describe('AppLinkProvider', () => {
         packageName: 'com.other.app',
         appName: 'Other',
         states: ['auth.token'],
-        methods: ['scanner.scan'],
+        methods: [{name: 'scanner.scan'}],
       },
     ];
     NativeAppLink.discoverApps.mockResolvedValue(JSON.stringify(apps));
@@ -82,6 +82,46 @@ describe('AppLinkProvider', () => {
       'scanner.scan': 'com.other.app',
     });
     expect(lastCall.apps).toEqual(apps);
+  });
+
+  it('builds route table from methods with schema', async () => {
+    const apps = [
+      {
+        packageName: 'com.ai.app',
+        appName: 'AI App',
+        states: [],
+        methods: [
+          {
+            name: 'translate',
+            schema: {
+              description: 'Translate text',
+              parameters: {
+                type: 'object',
+                properties: {text: {type: 'string'}},
+              },
+            },
+          },
+        ],
+      },
+    ];
+    NativeAppLink.discoverApps.mockResolvedValue(JSON.stringify(apps));
+
+    const onCtx = jest.fn();
+    await TestRenderer.act(async () => {
+      TestRenderer.create(
+        React.createElement(
+          AppLinkProvider,
+          {appId: 'test'},
+          React.createElement(ContextReader, {onContext: onCtx}),
+        ),
+      );
+    });
+
+    const lastCall = onCtx.mock.calls[onCtx.mock.calls.length - 1][0];
+    expect(lastCall.routeTable).toEqual({translate: 'com.ai.app'});
+    expect(lastCall.apps[0].methods[0].schema.description).toBe(
+      'Translate text',
+    );
   });
 
   it('still initializes when initialization fails', async () => {

@@ -17,7 +17,9 @@ describe('useDiscovery', () => {
       packageName: 'com.other.app',
       appName: 'Other App',
       states: ['auth.token'],
-      methods: ['scanner.scan'],
+      methods: [
+        {name: 'scanner.scan', schema: {description: 'Scan a QR code'}},
+      ],
     },
   ];
 

@@ -11,6 +11,31 @@ import {ReactNode} from 'react';
 /*  Discovery types                                                    */
 /* ------------------------------------------------------------------ */
 
+/**
+ * JSON-Schema-based method descriptor, compatible with Vercel AI SDK
+ * tool definitions. Returned by {@link useDiscovery} for methods that
+ * were registered with a schema.
+ */
+export interface MethodSchema {
+  /** Human-readable description of what this method does. */
+  description?: string;
+  /**
+   * JSON Schema describing the input parameters.
+   * Can be passed directly to Vercel AI SDK's `jsonSchema()`.
+   */
+  parameters?: Record<string, any>;
+  /** JSON Schema describing the return value (informational). */
+  returns?: Record<string, any>;
+}
+
+/** Describes a method registered by a discovered app. */
+export interface MethodInfo {
+  /** Globally unique method name. */
+  name: string;
+  /** Optional schema descriptor. Present only if the method was registered with one. */
+  schema?: MethodSchema;
+}
+
 export interface AppInfo {
   /** Android package name, e.g. "com.mycompany.apptools" */
   packageName: string;
@@ -18,8 +43,8 @@ export interface AppInfo {
   appName: string;
   /** Shared-state keys registered by this app */
   states: string[];
-  /** Shared-method names registered by this app */
-  methods: string[];
+  /** Methods registered by this app, each with optional schema metadata. */
+  methods: MethodInfo[];
 }
 
 /* ------------------------------------------------------------------ */
@@ -109,18 +134,34 @@ export function useSharedState<T = any>(
  *
  * @param name    Globally unique method name (e.g. `"scanner.scan"`).
  * @param handler Async function that processes the call and returns a result.
+ * @param schema  Optional JSON-Schema-based descriptor (compatible with
+ *                Vercel AI SDK tool definitions). When provided, AI agents
+ *                in other apps can discover parameter types automatically.
  *
  * @example
  * ```ts
- * useSharedMethod('scanner.scan', async (params: { type: string }) => {
- *   const data = await performScan(params.type);
- *   return { data };
+ * // Basic (no schema)
+ * useSharedMethod('scanner.scan', async (params) => {
+ *   return { data: await performScan(params.type) };
+ * });
+ *
+ * // With schema (AI-friendly)
+ * useSharedMethod('scanner.scan', handler, {
+ *   description: 'Scan a QR or barcode',
+ *   parameters: {
+ *     type: 'object',
+ *     properties: {
+ *       type: { type: 'string', description: 'Code type: qr | barcode' },
+ *     },
+ *     required: ['type'],
+ *   },
  * });
  * ```
  */
 export function useSharedMethod<TParams = any, TResult = any>(
   name: string,
   handler: (params: TParams) => Promise<TResult> | TResult,
+  schema?: MethodSchema,
 ): void;
 
 /* ------------------------------------------------------------------ */

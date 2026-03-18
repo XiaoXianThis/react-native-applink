@@ -30,10 +30,12 @@ import java.util.concurrent.TimeUnit;
 public class MethodHandler {
 
     private static final String PREF_NAME = "applink_method_registry";
+    private static final String SCHEMA_PREF_NAME = "applink_method_schemas";
     private static final long DEFAULT_TIMEOUT_MS = 15_000;
 
     private final Context appContext;
     private final SharedPreferences prefs;
+    private final SharedPreferences schemaPrefs;
     private final Set<String> registeredMethods = new CopyOnWriteArraySet<>();
     private final ConcurrentHashMap<String, CompletableFuture<String>> pendingCalls =
             new ConcurrentHashMap<>();
@@ -42,6 +44,7 @@ public class MethodHandler {
     public MethodHandler(Context context) {
         this.appContext = context.getApplicationContext();
         this.prefs = appContext.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+        this.schemaPrefs = appContext.getSharedPreferences(SCHEMA_PREF_NAME, Context.MODE_PRIVATE);
         registeredMethods.addAll(prefs.getAll().keySet());
     }
 
@@ -49,18 +52,28 @@ public class MethodHandler {
         this.reactContext = ctx;
     }
 
-    public void registerMethod(String name) {
+    public void registerMethod(String name, String schemaJson) {
         registeredMethods.add(name);
         prefs.edit().putBoolean(name, true).apply();
+        if (schemaJson != null) {
+            schemaPrefs.edit().putString(name, schemaJson).apply();
+        } else {
+            schemaPrefs.edit().remove(name).apply();
+        }
     }
 
     public void unregisterMethod(String name) {
         registeredMethods.remove(name);
         prefs.edit().remove(name).apply();
+        schemaPrefs.edit().remove(name).apply();
     }
 
     public Set<String> getRegisteredMethods() {
         return registeredMethods;
+    }
+
+    public String getMethodSchema(String name) {
+        return schemaPrefs.getString(name, null);
     }
 
     public boolean hasMethod(String name) {

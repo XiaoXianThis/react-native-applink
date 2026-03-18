@@ -24,7 +24,7 @@ import android.net.Uri;
  */
 public class AppLinkContentProvider extends ContentProvider {
 
-    private static final String[] COLUMNS = {"type", "key"};
+    private static final String[] COLUMNS = {"type", "key", "schema"};
 
     @Override
     public boolean onCreate() {
@@ -39,13 +39,16 @@ public class AppLinkContentProvider extends ContentProvider {
         SharedPreferences stateReg = getContext()
                 .getSharedPreferences("applink_state_registry", 0);
         for (String key : stateReg.getAll().keySet()) {
-            cursor.addRow(new Object[]{"state", key});
+            cursor.addRow(new Object[]{"state", key, null});
         }
 
         SharedPreferences methodReg = getContext()
                 .getSharedPreferences("applink_method_registry", 0);
+        SharedPreferences schemaReg = getContext()
+                .getSharedPreferences("applink_method_schemas", 0);
         for (String key : methodReg.getAll().keySet()) {
-            cursor.addRow(new Object[]{"method", key});
+            String schema = schemaReg.getString(key, null);
+            cursor.addRow(new Object[]{"method", key, schema});
         }
 
         return cursor;

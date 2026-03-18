@@ -117,11 +117,20 @@ public class AppLinkModule extends ReactContextBaseJavaModule {
                         Cursor cursor = getReactApplicationContext()
                                 .getContentResolver().query(uri, null, null, null, null);
                         if (cursor != null) {
+                            int schemaCol = cursor.getColumnIndex("schema");
                             while (cursor.moveToNext()) {
                                 String type = cursor.getString(0);
                                 String key = cursor.getString(1);
-                                if ("state".equals(type)) states.put(key);
-                                else if ("method".equals(type)) methods.put(key);
+                                if ("state".equals(type)) {
+                                    states.put(key);
+                                } else if ("method".equals(type)) {
+                                    JSONObject methodObj = new JSONObject();
+                                    methodObj.put("name", key);
+                                    if (schemaCol >= 0 && !cursor.isNull(schemaCol)) {
+                                        methodObj.put("schema", new JSONObject(cursor.getString(schemaCol)));
+                                    }
+                                    methods.put(methodObj);
+                                }
                             }
                             cursor.close();
                         }
@@ -243,8 +252,8 @@ public class AppLinkModule extends ReactContextBaseJavaModule {
     // ======================= Methods =======================
 
     @ReactMethod
-    public void registerMethod(String name) {
-        core.getMethodHandler().registerMethod(name);
+    public void registerMethod(String name, String schemaJson) {
+        core.getMethodHandler().registerMethod(name, schemaJson);
     }
 
     @ReactMethod

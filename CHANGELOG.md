@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.1.0 (2026-03-16)
+
+### Features
+
+- **Method Schema** — `useSharedMethod` now accepts an optional third `schema` parameter (JSON Schema format, compatible with Vercel AI SDK tool definitions)
+- **Rich Discovery** — `useDiscovery` returns method objects `{ name, schema? }` instead of plain strings, enabling AI agents to discover parameter types automatically
+- **ContentProvider schema column** — the capability cursor now includes a `schema` column for method entries
+
+### Breaking Changes
+
+- `AppInfo.methods` changed from `string[]` to `MethodInfo[]` (each element is `{ name: string, schema?: MethodSchema }`)
+
 ## 1.0.0 (2026-03-16)
 
 ### Features
